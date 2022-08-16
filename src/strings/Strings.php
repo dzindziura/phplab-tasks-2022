@@ -6,21 +6,21 @@ class Strings implements StringsInterface
 {
     public function snakeCaseToCamelCase(string $input): string
     {
-        $str = str_replace('_', '', ucwords($input, '_'));
-        $str = lcfirst($str);
-        return $str;
+        return lcfirst(str_replace('_', '', ucwords($input, '_')));
     }
 
     public function mirrorMultibyteString(string $input): string
     {
         $inp = explode(" ", $input);
         $result = '';
+
         for ($i = 0; $i < count($inp); $i++) {
             $res = preg_split('//u', $inp[$i], null, PREG_SPLIT_NO_EMPTY);
             $reverse = array_reverse($res);
             $implode = implode('', $reverse);
             $result = $result . ' ' . $implode;
         }
+
         return ltrim($result, ' ');
     }
 
@@ -31,6 +31,7 @@ class Strings implements StringsInterface
         } else {
             $result = 'The' . ' ' . ucfirst($noun);
         }
+
         return $result;
     }
 }
