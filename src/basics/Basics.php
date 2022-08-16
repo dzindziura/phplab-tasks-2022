@@ -4,7 +4,6 @@ namespace basics;
 
 class Basics implements BasicsInterface
 {
-
     private $validator;
 
     public function __construct($validator)
@@ -17,7 +16,7 @@ class Basics implements BasicsInterface
      * @return string
      * @throws \InvalidArgumentException
      */
-    public function getMinuteQuarter(int $minute): string
+    public function getMinuteQuarter(int $minute) : string
     {
         $this->validator->isMinutesException($minute);
 
@@ -37,14 +36,11 @@ class Basics implements BasicsInterface
      * @return boolean
      * @throws \InvalidArgumentException
      */
-    public function isLeapYear(int $year): bool
+    public function isLeapYear(int $year) : bool
     {
-        $result = false;
         $this->validator->isYearException($year);
-        if (0 == $year % 4 && 0 != $year % 100 || 0 == $year % 400) {
-            $result = true;
-        }
-        return $result;
+
+        return (($year%4) === 0 && ($year % 100) !== 0 || ($year % 400) === 0);
     }
 
     /**
@@ -52,9 +48,10 @@ class Basics implements BasicsInterface
      * @return boolean
      * @throws \InvalidArgumentException
      */
-    public function isSumEqual(string $input): bool
+    public function isSumEqual(string $input) : bool
     {
         $this->validator->isValidStringException($input);
+
         $firstHalfString = str_split(mb_substr($input, 0, 3));
         $secondHalfString = str_split(mb_substr($input, 3, 3));
 
