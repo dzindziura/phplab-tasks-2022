@@ -2,8 +2,25 @@
 require_once './functions.php';
 
 $airports = require './airports.php';
+$airportsState = $airports;
+$filter_by_first_letter = $_GET['filter_by_first_letter'] ?? '';
+$state = $_GET['state'] ?? '';
 
-// Filtering
+if ($state)
+{
+    $airports = array_filter($airportsState, function ($items) use ($state)
+    {
+        return $items['state'] == $state;
+    });
+}
+
+if ($filter_by_first_letter)
+{
+    $airports = array_filter($airports, function ($item) use ($filter_by_first_letter)
+    {
+        return $item['name'][0] == $filter_by_first_letter;
+    });
+}
 /**
  * Here you need to check $_GET request if it has any filtering
  * and apply filtering by First Airport Name Letter and/or Airport State
@@ -11,6 +28,12 @@ $airports = require './airports.php';
  */
 
 // Sorting
+$sort_by_tag = $_GET['sort'] ?? '';
+if ($sort_by_tag)
+{
+    $airports = array_sort($airports, $sort_by_tag, SORT_ASC);
+}
+
 /**
  * Here you need to check $_GET request if it has sorting key
  * and apply sorting
@@ -18,12 +41,20 @@ $airports = require './airports.php';
  */
 
 // Pagination
+
 /**
  * Here you need to check $_GET request if it has pagination key
  * and apply pagination logic
  * (see Pagination task below)
  */
+
+
+$per_page = 5;
+$currentPage = $_GET['page'] ?? 1;
+$pagesCount = (int)ceil(count($airports) / $per_page);
+$airports = array_chunk($airports, $per_page) [$currentPage - 1];
 ?>
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -32,7 +63,9 @@ $airports = require './airports.php';
     <meta name="description" content="">
     <title>Airports</title>
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+          integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+
 </head>
 <body>
 <main role="main" class="container">
@@ -53,10 +86,10 @@ $airports = require './airports.php';
         Filter by first letter:
 
         <?php foreach (getUniqueFirstLetters(require './airports.php') as $letter): ?>
-            <a href="#"><?= $letter ?></a>
+            <a href="<?= url(['filter_by_first_letter' => $letter]) ?>"><?= $letter ?></a>
         <?php endforeach; ?>
 
-        <a href="/" class="float-right">Reset all filters</a>
+        <a href="?" class="float-right">Reset all filters</a>
     </div>
 
     <!--
@@ -72,10 +105,10 @@ $airports = require './airports.php';
     <table class="table">
         <thead>
         <tr>
-            <th scope="col"><a href="#">Name</a></th>
-            <th scope="col"><a href="#">Code</a></th>
-            <th scope="col"><a href="#">State</a></th>
-            <th scope="col"><a href="#">City</a></th>
+            <th scope="col"><a href="<?= url(['sort' => 'name']) ?>">Name</a></th>
+            <th scope="col"><a href="<?= url(['sort' => 'code']) ?>">Code</a></th>
+            <th scope="col"><a href="<?= url(['sort' => 'state']) ?>">State</a></th>
+            <th scope="col"><a href="<?= url(['sort' => 'city']) ?>">City</a></th>
             <th scope="col">Address</th>
             <th scope="col">Timezone</th>
         </tr>
@@ -91,15 +124,15 @@ $airports = require './airports.php';
              - when you apply filter_by_state, than filter_by_first_letter (see Filtering task #1) is not reset
                i.e. if you have filter_by_first_letter set you can additionally use filter_by_state
         -->
-        <?php foreach ($airports as $airport): ?>
-        <tr>
-            <td><?= $airport['name'] ?></td>
-            <td><?= $airport['code'] ?></td>
-            <td><a href="#"><?= $airport['state'] ?></a></td>
-            <td><?= $airport['city'] ?></td>
-            <td><?= $airport['address'] ?></td>
-            <td><?= $airport['timezone'] ?></td>
-        </tr>
+        <?php foreach ($airports as $airport) : ?>
+            <tr>
+                <td><?= $airport['name'] ?></td>
+                <td><?= $airport['code'] ?></td>
+                <td><a href="<?= url(['state' => $airport['state']]) ?>"><?= $airport['state'] ?></a></td>
+                <td><?= $airport['city'] ?></td>
+                <td><?= $airport['address'] ?></td>
+                <td><?= $airport['timezone'] ?></td>
+            </tr>
         <?php endforeach; ?>
         </tbody>
     </table>
@@ -115,11 +148,34 @@ $airports = require './airports.php';
     -->
     <nav aria-label="Navigation">
         <ul class="pagination justify-content-center">
-            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <?php if ($pagesCount > 1): ?>
+                <?php for ($i = 1; $i <= $pagesCount; $i++): ?>
+                    <?php if ($currentPage > 4 && $i === 2): ?>
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    <?php endif; ?>
+                    <?php if ($i == $currentPage): ?>
+                        <li class="page-item active">
+                            <span class="page-link"><?= $i ?></span>
+                        </li>
+                    <?php elseif (
+                        $i == $currentPage + 1
+                        || $i == $currentPage + 2
+                        || $i == $currentPage - 1
+                        || $i == $currentPage - 2
+                        || $i == $pagesCount
+                        || $i == 1
+                    ): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="<?= url(['page' => $i]) ?>"><?= $i ?></a>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php if ($currentPage < $pagesCount - 3 && $i === $pagesCount - 1): ?>
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    <?php endif; ?>
+                <?php endfor; ?>
+            <?php endif; ?>
         </ul>
     </nav>
-
 </main>
 </html>
