@@ -16,7 +16,7 @@ class Basics implements BasicsInterface
      * @return string
      * @throws \InvalidArgumentException
      */
-    public function getMinuteQuarter(int $minute) : string
+    public function getMinuteQuarter(int $minute): string
     {
         $this->validator->isMinutesException($minute);
 
@@ -36,7 +36,7 @@ class Basics implements BasicsInterface
      * @return boolean
      * @throws \InvalidArgumentException
      */
-    public function isLeapYear(int $year) : bool
+    public function isLeapYear(int $year): bool
     {
         $this->validator->isYearException($year);
 
@@ -48,20 +48,15 @@ class Basics implements BasicsInterface
      * @return boolean
      * @throws \InvalidArgumentException
      */
-    public function isSumEqual(string $input) : bool
+    public function isSumEqual(string $input): bool
     {
         $this->validator->isValidStringException($input);
 
         $firstHalfString = str_split(mb_substr($input, 0, 3));
         $secondHalfString = str_split(mb_substr($input, 3, 3));
 
-        $sumFirstHalfString = 0;
-        $secondFirstHalfString = 0;
-
-        for ($i = 0; $i < count($firstHalfString); $i++) {
-            $sumFirstHalfString = $sumFirstHalfString + $firstHalfString[$i];
-            $secondFirstHalfString = $secondFirstHalfString + $secondHalfString[$i];
-        }
+        $sumFirstHalfString = array_sum($firstHalfString);
+        $secondFirstHalfString =  array_sum($secondHalfString);
 
         return $sumFirstHalfString == $secondFirstHalfString;
     }
