@@ -9,20 +9,20 @@ class KinoukrDomCrawlerParserAdapter implements ParserInterface
 {
     /**
      * @param string $siteContent
-     * @return Movie
+     * @return array
      */
-    public function parseContent(string $siteContent): Movie
+    public function parseContent(string $siteContent)
     {
         $crawler = new Crawler($siteContent);
 
         $title = $crawler->filter('h1')->text();
         $poster = $crawler->filter('.fposter > a')->attr('href');
-        $description = str_replace(
-            "<h2>" . $crawler->filter('.fdesc.full-text h2')->text() . "</h2>",
-            '',
-            $crawler->filter('.fdesc.full-text')->html()
-        );
+        $description = $crawler->filter('.fdesc')->text();
 
-        return new Movie($title, $poster, $description);
+        return [
+            'title' => $title,
+            'poster' => $poster,
+            'description' => $description
+        ];
     }
 }

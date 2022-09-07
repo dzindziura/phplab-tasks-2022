@@ -20,15 +20,10 @@ class CurlStrategy implements TransportInterface
         ]);
 
         $response = curl_exec($curl);
-        $error = curl_error($curl);
 
-        curl_close($curl);
-        if (!$error) {
-            return strpos($response, '<meta charset="windows-1251" />')
-                ? iconv("Windows-1251", "UTF-8", $response)
-                : $response;
-        }
+        return strpos($response, '<meta charset="windows-1251" />')
+            ? iconv("Windows-1251", "UTF-8", $response)
+            : $response;
 
-        throw new Exception($error);
     }
 }
