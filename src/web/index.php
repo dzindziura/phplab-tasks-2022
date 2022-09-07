@@ -6,18 +6,14 @@ $airportsState = $airports;
 $filter_by_first_letter = $_GET['filter_by_first_letter'] ?? '';
 $state = $_GET['state'] ?? '';
 
-if ($state)
-{
-    $airports = array_filter($airportsState, function ($items) use ($state)
-    {
+if ($state) {
+    $airports = array_filter($airportsState, function ($items) use ($state) {
         return $items['state'] == $state;
     });
 }
 
-if ($filter_by_first_letter)
-{
-    $airports = array_filter($airports, function ($item) use ($filter_by_first_letter)
-    {
+if ($filter_by_first_letter) {
+    $airports = array_filter($airports, function ($item) use ($filter_by_first_letter) {
         return $item['name'][0] == $filter_by_first_letter;
     });
 }
@@ -29,9 +25,9 @@ if ($filter_by_first_letter)
 
 // Sorting
 $sort_by_tag = $_GET['sort'] ?? '';
-if ($sort_by_tag)
-{
-    $airports = array_sort($airports, $sort_by_tag, SORT_ASC);
+if ($sort_by_tag) {
+    $price = array_column($airports, $sort_by_tag);
+    array_multisort($price, SORT_ASC, $airports);
 }
 
 /**
@@ -86,7 +82,7 @@ $airports = array_chunk($airports, $per_page) [$currentPage - 1];
         Filter by first letter:
 
         <?php foreach (getUniqueFirstLetters(require './airports.php') as $letter): ?>
-            <a href="<?= url(['filter_by_first_letter' => $letter]) ?>"><?= $letter ?></a>
+            <a href="?<?= http_build_query(['filter_by_first_letter' => $letter, 'page' => '1']) ?>"><?= $letter ?></a>
         <?php endforeach; ?>
 
         <a href="?" class="float-right">Reset all filters</a>
@@ -105,10 +101,10 @@ $airports = array_chunk($airports, $per_page) [$currentPage - 1];
     <table class="table">
         <thead>
         <tr>
-            <th scope="col"><a href="<?= url(['sort' => 'name']) ?>">Name</a></th>
-            <th scope="col"><a href="<?= url(['sort' => 'code']) ?>">Code</a></th>
-            <th scope="col"><a href="<?= url(['sort' => 'state']) ?>">State</a></th>
-            <th scope="col"><a href="<?= url(['sort' => 'city']) ?>">City</a></th>
+            <th scope="col"><a href="?<?= http_build_query(['sort' => 'name']) ?>">Name</a></th>
+            <th scope="col"><a href="?<?= http_build_query(['sort' => 'code']) ?>">Code</a></th>
+            <th scope="col"><a href="?<?= http_build_query(['sort' => 'state']) ?>">State</a></th>
+            <th scope="col"><a href="?<?= http_build_query(['sort' => 'city']) ?>">City</a></th>
             <th scope="col">Address</th>
             <th scope="col">Timezone</th>
         </tr>
@@ -128,7 +124,7 @@ $airports = array_chunk($airports, $per_page) [$currentPage - 1];
             <tr>
                 <td><?= $airport['name'] ?></td>
                 <td><?= $airport['code'] ?></td>
-                <td><a href="<?= url(['state' => $airport['state']]) ?>"><?= $airport['state'] ?></a></td>
+                <td><a href="?<?= http_build_query(['state' => $airport['state']]) ?>"><?= $airport['state'] ?></a></td>
                 <td><?= $airport['city'] ?></td>
                 <td><?= $airport['address'] ?></td>
                 <td><?= $airport['timezone'] ?></td>
@@ -166,7 +162,7 @@ $airports = array_chunk($airports, $per_page) [$currentPage - 1];
                         || $i == 1
                     ): ?>
                         <li class="page-item">
-                            <a class="page-link" href="<?= url(['page' => $i]) ?>"><?= $i ?></a>
+                            <a class="page-link" href="<?= http_build_query(['page' => $i]) ?>"><?= $i ?></a>
                         </li>
                     <?php endif; ?>
 

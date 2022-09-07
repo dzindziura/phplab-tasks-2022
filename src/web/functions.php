@@ -8,50 +8,27 @@
  *
  * @param array $airports
  * @return string[]
+ * @throws Exception
  */
-function getUniqueFirstLetters(array $airports)
+function getUniqueFirstLetters(array $airports): array
 {
-    // put your logic here
+    $unique_letters = [];
 
-    return ['A', 'B', 'C'];
-}
-
-function url(array $array): string
-{
-    return '?' . http_build_query(array_merge($_GET, $array));
-}
-
-function array_sort($array, $on, $order = SORT_ASC)
-{
-    $new_array = array();
-    $sortable_array = array();
-
-    if (count($array) > 0) {
-        foreach ($array as $k => $v) {
-            if (is_array($v)) {
-                foreach ($v as $k2 => $v2) {
-                    if ($k2 == $on) {
-                        $sortable_array[$k] = $v2;
-                    }
-                }
-            } else {
-                $sortable_array[$k] = $v;
-            }
+    foreach ($airports as $airport) {
+        if (!isset($airport['name'])) {
+            throw new Exception('Name field is required in Airport');
         }
 
-        switch ($order) {
-            case SORT_ASC:
-                asort($sortable_array);
-                break;
-            case SORT_DESC:
-                arsort($sortable_array);
-                break;
+        if (!is_string($airport['name'][0])) {
+            throw new Exception('Name must be string');
         }
 
-        foreach ($sortable_array as $k => $v) {
-            $new_array[$k] = $array[$k];
+        if (!in_array($airport['name'][0], $unique_letters)) {
+            $unique_letters[] = $airport['name'][0];
         }
     }
 
-    return $new_array;
+    sort($unique_letters);
+
+    return $unique_letters;
 }
