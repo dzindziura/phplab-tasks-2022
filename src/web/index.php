@@ -162,7 +162,7 @@ $airports = array_chunk($airports, $per_page) [$currentPage - 1];
                         || $i == 1
                     ): ?>
                         <li class="page-item">
-                            <a class="page-link" href="<?= http_build_query(['page' => $i]) ?>"><?= $i ?></a>
+                            <a class="page-link" href="<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>"><?= $i ?></a>
                         </li>
                     <?php endif; ?>
 
