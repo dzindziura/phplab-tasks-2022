@@ -9,27 +9,34 @@
 /** @var \PDO $pdo */
 require_once './pdo_ini.php';
 
-foreach (require_once('../web/airports.php') as $item) {
-    // Cities
-    // To check if city with this name exists in the DB we need to SELECT it first
-    $sth = $pdo->prepare('SELECT id FROM cities WHERE name = :name');
+function getInstanceId(\PDO $pdo, array $item, string $item_key, string $table, string $field, string $return_field): string
+{
+    $sth = $pdo->prepare("SELECT id FROM $table WHERE $field = :$field");
     $sth->setFetchMode(\PDO::FETCH_ASSOC);
-    $sth->execute(['name' => $item['city']]);
-    $city = $sth->fetch();
+    $sth->execute([$field => $item[$item_key]]);
+    $record = $sth->fetch();
 
-    // If result is empty - we need to INSERT city
-    if (!$city) {
-        $sth = $pdo->prepare('INSERT INTO cities (name) VALUES (:name)');
-        $sth->execute(['name' => $item['city']]);
+    if (!$record) {
+        $sth = $pdo->prepare("INSERT INTO $table ($field) VALUES (:$field)");
+        $sth->execute([$field => $item[$item_key]]);
 
-        // We will use this variable to INSERT airport
-        $cityId = $pdo->lastInsertId();
-    } else {
-        // We will use this variable to INSERT airport
-        $cityId = $city['id'];
+        return $pdo->lastInsertId();
     }
 
-    // TODO States
+    return $record[$return_field];
+}
 
-    // TODO Airports
+foreach (require_once('../web/airports.php') as $item) {
+    $cityInstanceId = getInstanceId($pdo, $item, 'city', 'cities', 'name', 'id');
+    $stateInstanceId = getInstanceId($pdo, $item, 'state', 'states', 'name', 'id');
+
+    $sth = $pdo->prepare('INSERT INTO airports (name, code, address, timezone, city_id, state_id) VALUES (:name, :code, :address, :timezone, :city_id, :state_id)');
+    $sth->execute([
+        'name'     => $item['name'],
+        'code'     => $item['code'],
+        'address'  => $item['address'],
+        'timezone' => $item['timezone'],
+        'city_id'  => $cityInstanceId,
+        'state_id' => $stateInstanceId,
+    ]);
 }
