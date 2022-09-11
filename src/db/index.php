@@ -130,10 +130,10 @@ $airports = getAirports($pdo, $additionalQuery, $pagination);
         Filter by first letter:
 
         <?php foreach ($uniqueFirstLetters as $letter): ?>
-            <a href="<?= generateUrl(['filter_by_first_letter' => $letter, 'page' => 1]) ?>"><?= $letter ?></a>
+            <a href="?<?=http_build_query(array_merge($_GET, ['filter_by_first_letter' => $letter, 'page' => 1]))?>"><?= $letter ?></a>
         <?php endforeach; ?>
 
-        <a href="<?= strtok($_SERVER['REQUEST_URI'], '?') ?>" class="float-right">Reset all filters</a>
+        <a href="?" class="float-right">Reset all filters</a>
     </div>
 
     <!--
@@ -148,12 +148,12 @@ $airports = getAirports($pdo, $additionalQuery, $pagination);
     <table class="table">
         <thead>
         <tr>
-            <th scope="col"><a href="<?= generateUrl(['sort' => 'name']) ?>">Name</a></th>
-            <th scope="col"><a href="<?= generateUrl(['sort' => 'code']) ?>">Code</a></th>
-            <th scope="col"><a href="<?= generateUrl(['sort' => 'state_name']) ?>">State</a></th>
-            <th scope="col"><a href="<?= generateUrl(['sort' => 'city_name']) ?>">City</a></th>
-            <th scope="col"><a href="<?= generateUrl(['sort' => 'address']) ?>">Address</a></th>
-            <th scope="col"><a href="<?= generateUrl(['sort' => 'timezone']) ?>">Timezone</a></th>
+            <th scope="col"><a href="?<?=http_build_query(array_merge($_GET, ['sort' => 'name'])) ?>">Name</a></th>
+            <th scope="col"><a href="?<?=http_build_query(array_merge($_GET, ['sort' => 'code'])) ?>">Code</a></th>
+            <th scope="col"><a href="?<?=http_build_query(array_merge($_GET, ['sort' => 'state_name'])) ?>">State</a></th>
+            <th scope="col"><a href="?<?=http_build_query(array_merge($_GET, ['sort' => 'city_name'])) ?>">City</a></th>
+            <th scope="col"><a href="?<?=http_build_query(array_merge($_GET, ['sort' => 'address'])) ?>">Address</a></th>
+            <th scope="col"><a href="?<?=http_build_query(array_merge($_GET, ['sort' => 'timezone'])) ?>">Timezone</a></th>
         </tr>
         </thead>
         <tbody>
@@ -171,7 +171,7 @@ $airports = getAirports($pdo, $additionalQuery, $pagination);
                 <tr>
                     <td><?= $airport['name'] ?></td>
                     <td><?= $airport['code'] ?></td>
-                    <td><a href="<?= generateUrl(['filter_by_state' => $airport['state_name'], 'page' => 1]) ?>"><?= $airport['state_name'] ?></a></td>
+                    <td><a href="?<?=http_build_query(array_merge($_GET, ['filter_by_state' => $airport['state_name'], 'page' => 1])) ?>"><?= $airport['state_name'] ?></a></td>
                     <td><?= $airport['city_name'] ?></td>
                     <td><?= $airport['address'] ?></td>
                     <td><?= $airport['timezone'] ?></td>
@@ -213,7 +213,7 @@ $airports = getAirports($pdo, $additionalQuery, $pagination);
                     || $i == 1
                 ): ?>
                     <li class="page-item">
-                        <a class="page-link" href="<?= generateUrl(['page' => $i]) ?>"><?= $i ?></a>
+                        <a class="page-link" href="?<?=http_build_query(array_merge($_GET, ['page' => $i])) ?>"><?= $i ?></a>
                     </li>
                 <?php endif; ?>
 
