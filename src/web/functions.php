@@ -12,21 +12,9 @@
  */
 function getUniqueFirstLetters(array $airports): array
 {
-    $unique_letters = [];
-
-    foreach ($airports as $airport) {
-        if (!isset($airport['name'])) {
-            throw new Exception('Name field is required in Airport');
-        }
-
-        if (!is_string($airport['name'][0])) {
-            throw new Exception('Name must be string');
-        }
-
-        if (!in_array($airport['name'][0], $unique_letters)) {
-            $unique_letters[] = $airport['name'][0];
-        }
-    }
+    $unique_letters = array_unique(array_map(function ($item){
+        return $item['name'][0];
+    }, $airports));
 
     sort($unique_letters);
 
