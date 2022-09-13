@@ -126,7 +126,6 @@ if (!empty($_GET['sort'])) {
     $field = $_GET['sort'];
 
     $additionalQuery .= 'ORDER BY ' . $field . ' ASC';
-    var_dump($additionalQuery);
 }
 
 // Pagination
