@@ -4,7 +4,78 @@
  */
 
 require_once('./pdo_ini.php');
-require_once('./functions.php');
+
+/**
+ * @param PDO $pdo
+ * @return array
+ */
+function getUniqueFirstLetters(\PDO $pdo): array
+{
+    $sth = $pdo->prepare('SELECT LEFT(name, 1) AS first_letter FROM airports GROUP BY first_letter ORDER BY first_letter ASC');
+    $sth->setFetchMode(\PDO::FETCH_ASSOC);
+    $sth->execute();
+
+    return array_column($sth->fetchAll(), 'first_letter');
+}
+
+/**
+ * @param \PDO $pdo
+ * @param string $additionalQuery
+ * @return int
+ */
+function getAirportsCount(\PDO $pdo, string $additionalQuery): int
+{
+    $sql = <<<SQL
+        SELECT 
+            COUNT(*) AS airports_count 
+        FROM 
+            airports 
+        INNER JOIN states ON airports.state_id = states.id
+        INNER JOIN cities ON airports.city_id = cities.id
+        $additionalQuery;   
+    SQL;
+
+    $query = $pdo->prepare($sql);
+    $query->setFetchMode(\PDO::FETCH_ASSOC);
+    $query->execute();
+
+    return $query->fetchColumn();
+}
+
+/**
+ * @param \PDO $pdo
+ * @param string $additionalQuery
+ * @param array $pagination
+ * @return array
+ */
+function getAirports(\PDO $pdo, string $additionalQuery, array $pagination): array
+{
+    $limit = $pagination['perPage'];
+    $offset = $pagination['offset'];
+
+    $sql = <<<SQL
+		SELECT
+			airports.name, 
+			airports.code, 
+			airports.address, 
+			airports.timezone,
+			states.name AS state_name, 
+			cities.name AS city_name
+		FROM 
+			airports
+		INNER JOIN states ON airports.state_id = states.id
+		INNER JOIN cities ON airports.city_id = cities.id
+		$additionalQuery
+		LIMIT $limit
+		OFFSET $offset;
+	SQL;
+
+    $sth = $pdo->prepare($sql);
+    $sth->setFetchMode(\PDO::FETCH_ASSOC);
+    $sth->execute();
+
+    return $sth->fetchAll();
+}
 
 define('AIRPORTS_PER_PAGE', 5);
 
@@ -15,12 +86,7 @@ $additionalQuery = '';
  * and https://www.w3resource.com/sql/select-statement/queries-with-distinct.php
  * and set the result to $uniqueFirstLetters variable
  */
-try {
-    $uniqueFirstLetters = getUniqueFirstLetters($pdo);
-} catch (Exception $e) {
-    echo $e . '<br>';
-    die();
-}
+
 
 // Filtering
 /**
@@ -57,21 +123,10 @@ if (!empty($_GET['filter_by_state'])) {
  */
 
 if (!empty($_GET['sort'])) {
-    switch ($_GET['sort']) {
-        case 'state_name':
-            $field = 'states.name';
-            break;
-        case 'city_name':
-            $field = 'cities.name';
-            break;
-        case 'name':
-            $field = 'airports.name';
-            break;
-        default:
-            $field = $_GET['sort'];
-    }
+    $field = $_GET['sort'];
 
     $additionalQuery .= 'ORDER BY ' . $field . ' ASC';
+    var_dump($additionalQuery);
 }
 
 // Pagination
@@ -85,8 +140,9 @@ if (!empty($_GET['sort'])) {
  */
 
 $airportsCount = getAirportsCount($pdo, $additionalQuery);
-
+$uniqueFirstLetters = getUniqueFirstLetters($pdo);
 $page = $_GET['page'] ?? 1;
+
 $pagination = [
     'perPage'     => AIRPORTS_PER_PAGE,
     'currentPage' => $page,
@@ -148,10 +204,10 @@ $airports = getAirports($pdo, $additionalQuery, $pagination);
     <table class="table">
         <thead>
         <tr>
-            <th scope="col"><a href="?<?=http_build_query(array_merge($_GET, ['sort' => 'name'])) ?>">Name</a></th>
+            <th scope="col"><a href="?<?=http_build_query(array_merge($_GET, ['sort' => 'airports.name'])) ?>">Name</a></th>
             <th scope="col"><a href="?<?=http_build_query(array_merge($_GET, ['sort' => 'code'])) ?>">Code</a></th>
-            <th scope="col"><a href="?<?=http_build_query(array_merge($_GET, ['sort' => 'state_name'])) ?>">State</a></th>
-            <th scope="col"><a href="?<?=http_build_query(array_merge($_GET, ['sort' => 'city_name'])) ?>">City</a></th>
+            <th scope="col"><a href="?<?=http_build_query(array_merge($_GET, ['sort' => 'states.name'])) ?>">State</a></th>
+            <th scope="col"><a href="?<?=http_build_query(array_merge($_GET, ['sort' => 'cities.name'])) ?>">City</a></th>
             <th scope="col"><a href="?<?=http_build_query(array_merge($_GET, ['sort' => 'address'])) ?>">Address</a></th>
             <th scope="col"><a href="?<?=http_build_query(array_merge($_GET, ['sort' => 'timezone'])) ?>">Timezone</a></th>
         </tr>
